@@ -2,7 +2,7 @@ const std = @import("std");
 
 const allocator = std.heap.page_allocator;
 
-const CanBePlacedT = fn ([*:0]const u8, u32) bool;
+const CanBePlacedT = fn ([*:0]const allowzero u8, u32) bool;
 
 pub fn main() !void {
     const path = try std.fs.realpathAlloc(allocator, "mods/basic-number.dll"); //Made mods folder in core but it's gitignored out as it's only full of dll
