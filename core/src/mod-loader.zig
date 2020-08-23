@@ -69,9 +69,9 @@ fn loadCard(dll_path: []const u8) !CardType {
     errdefer ret.dll.close();
 
     {
-        var name_maybe = ret.dll.lookup([*:0]const u8, "card_name");
-        if (name_maybe) |name| {
-            std.debug.print("{}\n", .{name});
+        var name_maybe = ret.dll.lookup(fn () [*:0]const u8, "getName");
+        if (name_maybe) |getName| {
+            var name = getName();
             ret.name.ptr = name;
             ret.name.len = std.mem.lenZ(name);
         } else return error.DllMissingData;

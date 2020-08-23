@@ -1,4 +1,7 @@
-export const card_name: [*:0]const u8 = "basic-4colors-0-9number";
+const card_name: [*:0]const u8 = "basic-4colors-0-9number";
+export fn getName() [*:0]const u8 {
+    return card_name;
+}
 
 export const dependencies: u8 = 0;
 export const depends_on = [dependencies][]const u8{}; //This card doesn't need anything
