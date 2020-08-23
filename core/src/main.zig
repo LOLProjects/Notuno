@@ -1,25 +1,15 @@
 const std = @import("std");
+const ModLoader = @import("mod-loader.zig");
+usingnamespace @import("cards.zig");
 
 const allocator = std.heap.page_allocator;
 
-const CanBePlacedT = fn ([*:0]const allowzero u8, u32) bool;
-
 pub fn main() !void {
-    const path = try std.fs.realpathAlloc(allocator, "mods/basic-number.dll"); //Made mods folder in core but it's gitignored out as it's only full of dll
-    defer allocator.free(path);
+    var cards_reg = try ModLoader.loadGame(allocator, "mods/test.txt");
+    defer ModLoader.deinitCardsRegister(&cards_reg);
 
-    std.debug.print("path: {}\n", .{path});
-
-    var card = try std.DynLib.open(path);    
-    defer card.close();
-
-    std.debug.print("dll is open\n", .{});
-
-    var func = card.lookup(CanBePlacedT, "canBePlaced");
-
-    if (func) |canBePlaced| {
-        var r = canBePlaced("idk", 0);
-        std.debug.print("expect true: {}\n", .{r});
-    } else
-        @panic("card doesn't have canBePlaced() function");
+    var card_it = cards_reg.iterator();
+    while (card_it.next()) |c| {
+        std.debug.print("{} : {}\n", .{ c.key, c.value.name });
+    }
 }
