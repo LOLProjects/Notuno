@@ -71,9 +71,9 @@ pub const Hand = struct {
     cards: [7]?Card,
 
     pub fn init() Self {
-        var card_type = CardType{};
+        //var card_type = CardType{};
         return Self{
-            .cards = [_]?Card{Card{ .meta = 0, .card_type = &card_type }} ** 7,
+            .cards = [_]?Card{Card{ .meta = 0, .card_type = undefined }} ** 7,
         };
     }
 };
