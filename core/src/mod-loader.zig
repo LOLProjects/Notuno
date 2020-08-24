@@ -76,8 +76,8 @@ fn checkDependencies(cr: CardsRegister) !void {
         var deps_count: u8 = 0;
         var deps_ptr = getDependencies(&deps_count);
 
-        //Iterate over this card's dependencies
         if (deps_ptr) |dependencies| {
+            //Iterate over this card's dependencies
             deps_loop: for (dependencies[0..deps_count]) |dependency| {
                 //Iterate over the cards again to see if a card's name matches the needed dependency
                 var card_it_2 = cr.iterator();

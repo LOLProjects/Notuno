@@ -11,13 +11,21 @@ pub fn main() !void {
     var buffer: [20]u8 = undefined;
     var running: bool = true;
 
+    try stdout.print("Loading mods\n", .{});
+    var cards_reg = try ModLoader.loadGame(allocator, "mods/test.txt");
+    defer ModLoader.deinitCardsRegister(&cards_reg);
+    var card_it = cards_reg.iterator();
+    while (card_it.next()) |c| {
+        std.debug.print("Loaded card: {}\n", .{ c.value.name });
+    }
+
     try stdout.print("Game starting with 2 players and stuff\n", .{});
-    var game: Game = try Game.init(allocator);
+    var game: Game = try Game.init(allocator, cards_reg);
     defer game.free(allocator);
 
     while (running) {
         try stdout.print("It is player {}'s turn! Your hand is:\n", .{game.current_player_index + 1});
-        try displayHand(stdout, game);
+        game.displayHand();
         try stdout.print("Choose a card to play: ", .{});
 
         const line: ?[]const u8 = getLine(stdin, buffer[0..]) catch |err| {
@@ -62,14 +70,6 @@ fn getLine(file: std.fs.File, buffer: []u8) !?[]const u8 {
         return std.mem.trimRight(u8, val, "\r\n");
     }
     return line;
-}
-
-fn displayHand(writer: std.fs.File.Writer, game: Game) !void {
-    for (game.getCurrentPlayer().hand.cards) |card, i| {
-        if (card) |val| {
-            try writer.print("Card #{}\n", .{i + 1});
-        }
-    }
 }
 
 // test "modloader" {
