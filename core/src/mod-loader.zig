@@ -1,4 +1,4 @@
-//!This module contains the functions required to loading a set of card-mods from a rules file
+//!This module contains the functions required to load a set of card-mods from a rules file
 
 const std = @import("std");
 usingnamespace @import("cards.zig");
@@ -43,12 +43,9 @@ pub fn loadGame(allocator: *std.mem.Allocator, rules_file_path: []const u8) !Car
             //check name
             //put card mod in cards register
         }
-
     } else return error.FileError;
 
     return ret;
 }
 
-fn loadCard(dll_path: []const u8) !Card {
-
-}
+fn loadCard(dll_path: []const u8) !Card {}
