@@ -70,35 +70,29 @@ const GetDepsFnType = fn (*u8) ?[*][]const u8;
 fn checkDependencies(cr: CardsRegister) !void {
     var card_it = cr.iterator();
     while (card_it.next()) |c| {
-        var deps_fn_maybe = c.value.dll.lookup(GetDepsFnType, "getDependencies");
+        //Get the dependencies through a dll function, or continue
+        var getDependencies = c.value.dll.lookup(GetDepsFnType, "getDependencies") orelse continue;
 
-        //Get the dependencies through a dll function
-        if (deps_fn_maybe) |getDependencies| {
-            var deps_count: u8 = 0;
-            var deps_ptr = getDependencies(&deps_count);
+        var deps_count: u8 = 0;
+        var deps_ptr = getDependencies(&deps_count);
 
-            //Iterate over this card's dependencies
-            if (deps_ptr) |dependencies| {
-                var i: usize = 0;
-                deps_while: while (i < deps_count) : (i += 1) {
-                    const dependency = dependencies[i];
-
-                    //Iterate over the cards again to see if a card's name matches the needed dependency
-                    var card_it_2 = cr.iterator();
-                    while (card_it_2.next()) |c2| {
-                        if (std.mem.eql(u8, c2.value.name, dependency))
-                            continue :deps_while;
-                    }
-                    
-                    std.debug.print("Error: Card '{}' has a missing dependency : '{}'.\n", .{c.value.name, dependency});
-                    return error.MissingDependency;
+        //Iterate over this card's dependencies
+        if (deps_ptr) |dependencies| {
+            deps_loop: for (dependencies[0..deps_count]) |dependency| {
+                //Iterate over the cards again to see if a card's name matches the needed dependency
+                var card_it_2 = cr.iterator();
+                while (card_it_2.next()) |c2| {
+                    if (std.mem.eql(u8, c2.value.name, dependency))
+                        continue :deps_loop;
                 }
-            } else {    //Returned pointer is null?
-                if (deps_count != 0)
-                    return error.GetDependenciesError;
+                
+                std.debug.print("Error: Card '{}' has a missing dependency : '{}'.\n", .{c.value.name, dependency});
+                return error.MissingDependency;
             }
-
-        } //else, we just assume theres no dependencies
+        } else {    //Returned pointer is null?
+            if (deps_count != 0)
+                return error.GetDependenciesError;
+        }
     }
 }
 
