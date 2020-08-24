@@ -49,6 +49,8 @@ pub fn loadGame(allocator: *std.mem.Allocator, rules_file_path: []const u8) !Car
         }
     }
 
+    try checkDependencies(ret);
+
     return ret;
 }
 
@@ -62,6 +64,45 @@ pub fn deinitCardsRegister(cr: *CardsRegister) void {
     }
 }
 
+const GetDepsFnType = fn (*u8) ?[*][]const u8;
+
+///Iterates on a cards register to check if all the cards mods have the cards they depend on
+fn checkDependencies(cr: CardsRegister) !void {
+    var card_it = cr.iterator();
+    while (card_it.next()) |c| {
+        var deps_fn_maybe = c.value.dll.lookup(GetDepsFnType, "getDependencies");
+
+        //Get the dependencies through a dll function
+        if (deps_fn_maybe) |getDependencies| {
+            var deps_count: u8 = 0;
+            var deps_ptr = getDependencies(&deps_count);
+
+            //Iterate over this card's dependencies
+            if (deps_ptr) |dependencies| {
+                var i: usize = 0;
+                deps_while: while (i < deps_count) : (i += 1) {
+                    const dependency = dependencies[i];
+
+                    //Iterate over the cards again to see if a card's name matches the needed dependency
+                    var card_it_2 = cr.iterator();
+                    while (card_it_2.next()) |c2| {
+                        if (std.mem.eql(u8, c2.value.name, dependency))
+                            continue :deps_while;
+                    }
+                    
+                    std.debug.print("Error: Card '{}' has a missing dependency : '{}'.\n", .{c.value.name, dependency});
+                    return error.MissingDependency;
+                }
+            } else {    //Returned pointer is null?
+                if (deps_count != 0)
+                    return error.GetDependenciesError;
+            }
+
+        } //else, we just assume theres no dependencies
+    }
+}
+
+///Loads a single card (mod)
 fn loadCard(dll_path: []const u8) !CardType {
     var ret: CardType = undefined;
 
@@ -71,9 +112,7 @@ fn loadCard(dll_path: []const u8) !CardType {
     {
         var name_maybe = ret.dll.lookup(fn () [*:0]const u8, "getName");
         if (name_maybe) |getName| {
-            var name = getName();
-            ret.name.ptr = name;
-            ret.name.len = std.mem.lenZ(name);
+            ret.name = std.mem.span(getName());
         } else return error.DllMissingData;
     }
 
