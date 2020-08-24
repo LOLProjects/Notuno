@@ -1,4 +1,4 @@
-//!This module contains the functions required to loading a set of card-mods from a rules file
+//!This module contains the functions required to load a set of card-mods from a rules file
 
 const std = @import("std");
 usingnamespace @import("cards.zig");
