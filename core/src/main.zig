@@ -1,6 +1,7 @@
 const std = @import("std");
 const allocator = std.heap.page_allocator;
-
+const ModLoader = @import("mod-loader.zig");
+usingnamespace @import("cards.zig");
 usingnamespace @import("game.zig");
 const CanBePlacedT = fn ([*:0]allowzero const u8, u32) bool;
 
@@ -70,3 +71,13 @@ fn displayHand(writer: std.fs.File.Writer, game: Game) !void {
         }
     }
 }
+
+// test "modloader" {
+//     var cards_reg = try ModLoader.loadGame(allocator, "mods/test.txt");
+//     defer ModLoader.deinitCardsRegister(&cards_reg);
+
+//     var card_it = cards_reg.iterator();
+//     while (card_it.next()) |c| {
+//         std.debug.print("{} : {}\n", .{ c.key, c.value.name });
+//     }
+// }
